@@ -1,0 +1,79 @@
+[importlinter]
+root_packages =
+    identity
+    property_management
+    landlord
+    administration
+    tenant
+    ai_search
+    shared
+    infrastructure
+include_external_packages = True
+
+[importlinter:contract:identity-layers]
+name = Identity follows the hexagonal layers
+type = layers
+layers =
+    identity.interfaces
+    identity.infrastructure
+    identity.application
+    identity.domain
+
+[importlinter:contract:property-management-layers]
+name = Property management follows the hexagonal layers
+type = layers
+layers =
+    property_management.interfaces
+    property_management.infrastructure
+    property_management.application
+    property_management.domain
+
+[importlinter:contract:landlord-layers]
+name = Landlord follows the hexagonal layers
+type = layers
+layers =
+    landlord.interfaces
+    landlord.infrastructure
+    landlord.application
+    landlord.domain
+
+[importlinter:contract:administration-layers]
+name = Administration follows the hexagonal layers
+type = layers
+layers =
+    administration.interfaces
+    administration.infrastructure
+    administration.application
+    administration.domain
+
+[importlinter:contract:tenant-layers]
+name = Tenant follows the hexagonal layers
+type = layers
+layers =
+    tenant.interfaces
+    tenant.infrastructure
+    tenant.application
+    tenant.domain
+
+[importlinter:contract:ai-search-layers]
+name = AI search follows the hexagonal layers
+type = layers
+layers =
+    ai_search.interfaces
+    ai_search.infrastructure
+    ai_search.application
+    ai_search.domain
+
+[importlinter:contract:domain-purity]
+name = Domain layers do not depend on frameworks
+type = forbidden
+source_modules =
+    identity.domain
+    property_management.domain
+    landlord.domain
+    administration.domain
+    tenant.domain
+    ai_search.domain
+forbidden_modules =
+    django
+    rest_framework
