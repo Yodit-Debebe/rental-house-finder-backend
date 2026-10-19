@@ -20,11 +20,6 @@ db.sqlite3
 .coverage
 htmlcov/
 
-# Python cache directories and files
-__pycache__/
-*.py[cod]
-
-rental_house_finder
-
+# macOS
 .DS_Store
 
