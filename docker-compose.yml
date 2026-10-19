@@ -1,0 +1,23 @@
+services:
+  db:
+    image: postgres:16
+    container_name: rental-house-finder-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: rental_house_finder
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: change-me # must match DB_PASSWORD in .env
+    ports:
+      # If you already run a local PostgreSQL on 5432, change to "5433:5432"
+      # and set DB_PORT=5433 in .env
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d rental_house_finder"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
