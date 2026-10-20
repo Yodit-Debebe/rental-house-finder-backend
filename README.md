@@ -3,16 +3,18 @@
 Backend for a rental house finder platform, built as a **modular monolith**
 using Domain-Driven Design and Hexagonal Architecture.
 
-> **Status: scaffold stage.** The architecture, configuration, database
-> setup, tests and CI are in place. Business features (identity, property
-> management, landlord, tenant, AI search) are not implemented yet.
+> **Status: in development.** The foundation (architecture, configuration,
+> database, tests, CI) is complete, and the `identity` module is implemented:
+> registration, login with token authentication, and a current-user endpoint.
+> The remaining modules (property management, landlord, tenant, AI search)
+> are still scaffolding.
 
 ## Tech stack
 
 | Layer | Technology |
 |---|---|
 | Framework | Django 6.1 |
-| API | Django REST Framework 3.18 (configured later, with the first endpoint) |
+| API | Django REST Framework 3.18 (token authentication) |
 | Database | PostgreSQL 16 via psycopg 3 |
 | Config | `python-dotenv` (`.env` file) |
 | Architecture | DDD + Hexagonal + Modular Monolith — see [ARCHITECTURE.md](ARCHITECTURE.md) |
@@ -22,12 +24,12 @@ using Domain-Driven Design and Hexagonal Architecture.
 ```
 config/                Project settings, root URL router, WSGI/ASGI entry points
 manage.py              Django CLI (runserver, migrate, test, shell...)
-identity/              Users, roles, authentication          ┐
-property_management/   Rental property listings              │
-landlord/              Landlord-side features                │  each app has:
-administration/        Back-office / admin features          │  domain/  application/
-tenant/                Tenant-side features                  │  infrastructure/  interfaces/
-ai_search/             AI-powered search                     ┘
+identity/              Users, roles, authentication — implemented
+property_management/   Rental property listings — scaffolding
+landlord/              Landlord-side features — scaffolding
+administration/        Back-office / admin features — scaffolding
+tenant/                Tenant-side features — scaffolding
+ai_search/             AI-powered search — scaffolding
 shared/                Code used by 2+ modules (API helpers, base types, exceptions)
 infrastructure/        Shared technical adapters (database, keycloak, kafka, storage)
 ARCHITECTURE.md        Architecture rules — read this before adding code
@@ -35,7 +37,8 @@ docker-compose.yml     Local PostgreSQL for development
 ```
 
 Inside every app, code follows the dependency rule
-`interfaces → application → domain ← infrastructure`
+`interfaces → application → domain ← infrastructure`, organized as
+`domain/`, `application/`, `infrastructure/` and `interfaces/`
 (full rules in [ARCHITECTURE.md](ARCHITECTURE.md)).
 
 ## Getting started
@@ -104,7 +107,45 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Open http://127.0.0.1:8000/admin/ — the admin site is currently the only route.
+Open http://127.0.0.1:8000/admin/ for the admin site. The API is served under
+`http://127.0.0.1:8000/api/` (see below).
+
+## API
+
+Base path: `/api/`
+
+| Method | Endpoint | Auth | Description | Success | Errors |
+|---|---|---|---|---|---|
+| POST | `/api/identity/register/` | public | Create an account | `201` user | `400` invalid input · `409` email taken |
+| POST | `/api/identity/login/` | public | Obtain an auth token | `200` `{token, user}` | `401` bad credentials |
+| GET | `/api/identity/me/` | token | Current user | `200` user | `401` missing/invalid token |
+
+Authenticated requests send the token in a header:
+
+```
+Authorization: Token <token>
+```
+
+Registration accepts `role` values `tenant` (default) and `landlord`; admin
+accounts can only be created through `createsuperuser` / the admin site.
+
+### Example
+
+```bash
+# 1. Register (password: at least 8 characters)
+curl -X POST http://127.0.0.1:8000/api/identity/register/ \
+  -H "Content-Type: application/json" \
+  -d '{"email":"you@example.com","full_name":"Your Name","password":"a-strong-password","role":"tenant"}'
+
+# 2. Log in and copy the token from the response
+curl -X POST http://127.0.0.1:8000/api/identity/login/ \
+  -H "Content-Type: application/json" \
+  -d '{"email":"you@example.com","password":"a-strong-password"}'
+
+# 3. Fetch the current user with the token
+curl http://127.0.0.1:8000/api/identity/me/ \
+  -H "Authorization: Token <token>"
+```
 
 ## Tests and checks
 
