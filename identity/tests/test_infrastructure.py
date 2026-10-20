@@ -3,9 +3,8 @@ from django.test import TestCase, override_settings
 from identity.application.exceptions import EmailAlreadyRegistered
 from identity.domain.entities import User
 from identity.domain.value_objects import Email, Role
-from identity.infrastructure.repositories import DjangoUserRepository
-from identity.infrastructure.security import DjangoPasswordHasher
-from identity.infrastructure.tokens import DRFTokenIssuer
+from identity.infrastructure.persistence import DjangoUserRepository
+from identity.infrastructure.security import DRFTokenIssuer, DjangoPasswordHasher
 from identity.models import User as UserModel
 
 # Production-strength hashing is deliberately slow; tests do not need it.

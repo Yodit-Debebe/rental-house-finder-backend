@@ -59,7 +59,39 @@ Interfaces translate external requests into application use cases.
 - Tenant
 - AI Search
 
-### Infrastructure layout
+### Module layout
+
+Each module is organized by layer, and each layer by concept:
+
+```text
+<module>/
+├── domain/
+│   ├── entities/        # one file per entity
+│   ├── value_objects/   # one file per value object
+│   ├── repositories/    # repository interfaces (ports owned by domain)
+│   ├── services/        # stateless domain services
+│   ├── events/          # domain events
+│   └── exceptions.py    # domain errors
+├── application/
+│   ├── commands/        # write-operation input DTOs
+│   ├── queries/         # read-operation input DTOs
+│   ├── dto/             # output DTOs
+│   ├── ports/           # outbound interfaces (hashing, tokens, ...)
+│   ├── use_cases/       # orchestration, one file per use case
+│   └── exceptions.py
+├── infrastructure/
+│   ├── persistence/     # repository implementations (Django ORM)
+│   ├── security/        # password hashing and token adapters
+│   └── keycloak/        # identity provider adapter (future)
+└── interfaces/
+    └── http/            # serializers, views, urls
+```
+
+Package `__init__.py` files re-export the public names of each concept, so
+consumers import from the package (e.g. `identity.domain.entities`), not from
+deep module paths.
+
+## Infrastructure layout
 
 - Top-level `infrastructure/` — shared technical adapters used by all
   modules (database utilities, Keycloak client, Kafka client, storage).

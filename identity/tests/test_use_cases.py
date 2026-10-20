@@ -4,17 +4,16 @@ from identity.application.exceptions import (
     EmailAlreadyRegistered,
     InvalidCredentials,
 )
-from identity.application.ports import PasswordHasher, TokenIssuer, UserRepository
-from identity.application.use_cases.authenticate_user import (
+from identity.application.commands import (
     AuthenticateUserCommand,
-    AuthenticateUserUseCase,
-)
-from identity.application.use_cases.register_user import (
     RegisterUserCommand,
-    RegisterUserUseCase,
 )
+from identity.application.ports import PasswordHasher, TokenIssuer
+from identity.application.use_cases.authenticate_user import AuthenticateUserUseCase
+from identity.application.use_cases.register_user import RegisterUserUseCase
 from identity.domain.entities import User
 from identity.domain.exceptions import InvalidEmail
+from identity.domain.repositories import UserRepository
 from identity.domain.value_objects import Email, Role
 
 

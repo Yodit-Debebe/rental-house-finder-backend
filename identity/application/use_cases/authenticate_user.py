@@ -1,22 +1,10 @@
-from dataclasses import dataclass
-
+from identity.application.commands import AuthenticateUserCommand
+from identity.application.dto import AuthenticationResult
 from identity.application.exceptions import InvalidCredentials
-from identity.application.ports import PasswordHasher, TokenIssuer, UserRepository
-from identity.domain.entities import User
+from identity.application.ports import PasswordHasher, TokenIssuer
 from identity.domain.exceptions import InvalidEmail
+from identity.domain.repositories import UserRepository
 from identity.domain.value_objects import Email
-
-
-@dataclass(frozen=True)
-class AuthenticateUserCommand:
-    email: str
-    password: str
-
-
-@dataclass(frozen=True)
-class AuthenticationResult:
-    user: User
-    token: str
 
 
 class AuthenticateUserUseCase:

@@ -1,6 +1,5 @@
 import re
 from dataclasses import dataclass
-from enum import Enum
 
 from identity.domain.exceptions import InvalidEmail
 
@@ -21,9 +20,3 @@ class Email:
 
     def __str__(self):
         return self.value
-
-
-class Role(str, Enum):
-    TENANT = "tenant"
-    LANDLORD = "landlord"
-    ADMIN = "admin"

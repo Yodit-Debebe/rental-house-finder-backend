@@ -3,24 +3,21 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from identity.application.commands import (
+    AuthenticateUserCommand,
+    RegisterUserCommand,
+)
 from identity.application.exceptions import (
     EmailAlreadyRegistered,
     InvalidCredentials,
 )
-from identity.application.use_cases.authenticate_user import (
-    AuthenticateUserCommand,
-    AuthenticateUserUseCase,
-)
-from identity.application.use_cases.register_user import (
-    RegisterUserCommand,
-    RegisterUserUseCase,
-)
+from identity.application.use_cases.authenticate_user import AuthenticateUserUseCase
+from identity.application.use_cases.register_user import RegisterUserUseCase
 from identity.domain.exceptions import InvalidEmail
 from identity.domain.value_objects import Email
-from identity.infrastructure.repositories import DjangoUserRepository
-from identity.infrastructure.security import DjangoPasswordHasher
-from identity.infrastructure.tokens import DRFTokenIssuer
-from identity.interfaces.serializers import (
+from identity.infrastructure.persistence import DjangoUserRepository
+from identity.infrastructure.security import DRFTokenIssuer, DjangoPasswordHasher
+from identity.interfaces.http.serializers import (
     LoginSerializer,
     RegisterUserSerializer,
     serialize_user,

@@ -1,17 +1,9 @@
-from dataclasses import dataclass
-
+from identity.application.commands import RegisterUserCommand
 from identity.application.exceptions import EmailAlreadyRegistered
-from identity.application.ports import PasswordHasher, UserRepository
+from identity.application.ports import PasswordHasher
 from identity.domain.entities import User
+from identity.domain.repositories import UserRepository
 from identity.domain.value_objects import Email, Role
-
-
-@dataclass(frozen=True)
-class RegisterUserCommand:
-    email: str
-    full_name: str
-    password: str
-    role: str = Role.TENANT.value
 
 
 class RegisterUserUseCase:

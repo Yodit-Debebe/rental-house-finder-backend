@@ -1,8 +1,8 @@
 from django.db import IntegrityError, transaction
 
 from identity.application.exceptions import EmailAlreadyRegistered
-from identity.application.ports import UserRepository
 from identity.domain.entities import User
+from identity.domain.repositories import UserRepository
 from identity.domain.value_objects import Email, Role
 from identity.models import User as UserModel
 

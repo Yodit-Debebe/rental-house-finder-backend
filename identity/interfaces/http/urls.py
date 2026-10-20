@@ -1,6 +1,6 @@
 from django.urls import path
 
-from identity.interfaces.views import LoginView, MeView, RegisterUserView
+from identity.interfaces.http.views import LoginView, MeView, RegisterUserView
 
 app_name = "identity"
 
