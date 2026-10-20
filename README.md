@@ -119,6 +119,11 @@ Base path: `/api/`
 | POST | `/api/identity/register/` | public | Create an account | `201` user | `400` invalid input · `409` email taken |
 | POST | `/api/identity/login/` | public | Obtain an auth token | `200` `{token, user}` | `401` bad credentials |
 | GET | `/api/identity/me/` | token | Current user | `200` user | `401` missing/invalid token |
+| GET | `/api/properties/` | landlord token | List the landlord's properties | `200` list | `401` · `403` not a landlord |
+| POST | `/api/properties/` | landlord token | Create a property | `201` property | `400` invalid input |
+| GET | `/api/properties/<id>/` | landlord token | Get an owned property | `200` property | `403` not owner · `404` missing |
+| PATCH | `/api/properties/<id>/` | landlord token | Update an owned property | `200` property | `400` · `403` · `404` |
+| DELETE | `/api/properties/<id>/` | landlord token | Delete an owned property | `204` | `403` · `404` |
 
 Authenticated requests send the token in a header:
 
@@ -145,6 +150,15 @@ curl -X POST http://127.0.0.1:8000/api/identity/login/ \
 # 3. Fetch the current user with the token
 curl http://127.0.0.1:8000/api/identity/me/ \
   -H "Authorization: Token <token>"
+
+# 4. As a landlord, create and list a property
+curl -X POST http://127.0.0.1:8000/api/properties/ \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Token <landlord-token>" \
+  -d '{"title":"2-bedroom apartment","address":"Bole Road 12","city":"Addis Ababa","price":"15000.00","bedrooms":2,"bathrooms":1}'
+
+curl http://127.0.0.1:8000/api/properties/ \
+  -H "Authorization: Token <landlord-token>"
 ```
 
 ## Tests and checks
