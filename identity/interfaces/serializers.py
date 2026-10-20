@@ -9,7 +9,8 @@ class RegisterUserSerializer(serializers.Serializer):
     full_name = serializers.CharField(max_length=255)
     password = serializers.CharField(write_only=True, min_length=8)
     role = serializers.ChoiceField(
-        choices=[role.value for role in Role],
+        # Public registration must never grant admin rights.
+        choices=[Role.TENANT.value, Role.LANDLORD.value],
         default=Role.TENANT.value,
     )
 

@@ -74,6 +74,11 @@ class IdentityApiTests(APITestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data["role"], "landlord")
 
+    def test_register_rejects_admin_role(self):
+        response = self.register(role="admin")
+
+        self.assertEqual(response.status_code, 400)
+
     def test_login_returns_token_and_user(self):
         self.register()
 
