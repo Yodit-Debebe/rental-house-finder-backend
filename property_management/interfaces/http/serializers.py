@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from property_management.domain.entities import Property
+from property_management.domain.entities import Amenity, Property, PropertyImage
 
 
 class CreatePropertySerializer(serializers.Serializer):
@@ -12,6 +12,11 @@ class CreatePropertySerializer(serializers.Serializer):
     bedrooms = serializers.IntegerField(min_value=0)
     bathrooms = serializers.IntegerField(min_value=0)
     is_available = serializers.BooleanField(default=True)
+    amenity_ids = serializers.ListField(
+        child=serializers.IntegerField(min_value=1),
+        required=False,
+        default=list,
+    )
 
 
 class UpdatePropertySerializer(serializers.Serializer):
@@ -27,10 +32,39 @@ class UpdatePropertySerializer(serializers.Serializer):
     bedrooms = serializers.IntegerField(min_value=0, required=False)
     bathrooms = serializers.IntegerField(min_value=0, required=False)
     is_available = serializers.BooleanField(required=False)
+    amenity_ids = serializers.ListField(
+        child=serializers.IntegerField(min_value=1), required=False
+    )
 
 
-def serialize_property(property: Property) -> dict:
+class PropertyImageUploadSerializer(serializers.Serializer):
+    image = serializers.ImageField()
+    caption = serializers.CharField(
+        max_length=255, required=False, allow_blank=True, default=""
+    )
+    is_cover = serializers.BooleanField(default=False)
+
+
+def serialize_amenity(amenity: Amenity) -> dict:
+    return {"id": amenity.id, "name": amenity.name}
+
+
+def serialize_image(image: PropertyImage) -> dict:
+    return {
+        "id": image.id,
+        "url": image.url,
+        "caption": image.caption,
+        "is_cover": image.is_cover,
+    }
+
+
+def serialize_property(
+    property: Property,
+    amenities: list[Amenity] | None = None,
+    images: list[PropertyImage] | None = None,
+) -> dict:
     """Convert a domain Property into the API representation."""
+    amenities_by_id = {amenity.id: amenity for amenity in amenities or []}
     return {
         "id": property.id,
         "landlord_id": property.landlord_id,
@@ -42,4 +76,10 @@ def serialize_property(property: Property) -> dict:
         "bedrooms": property.bedrooms,
         "bathrooms": property.bathrooms,
         "is_available": property.is_available,
+        "amenities": [
+            serialize_amenity(amenities_by_id[amenity_id])
+            for amenity_id in property.amenity_ids
+            if amenity_id in amenities_by_id
+        ],
+        "images": [serialize_image(image) for image in images or []],
     }

@@ -4,7 +4,9 @@ from unittest import TestCase
 from property_management.application.commands import (
     CreatePropertyCommand,
     DeletePropertyCommand,
+    DeletePropertyImageCommand,
     UpdatePropertyCommand,
+    UploadPropertyImageCommand,
 )
 from property_management.application.queries import (
     GetPropertyQuery,
@@ -12,17 +14,29 @@ from property_management.application.queries import (
 )
 from property_management.application.use_cases import (
     CreatePropertyUseCase,
+    DeletePropertyImageUseCase,
     DeletePropertyUseCase,
     GetPropertyUseCase,
+    ListAmenitiesUseCase,
     ListLandlordPropertiesUseCase,
     UpdatePropertyUseCase,
+    UploadPropertyImageUseCase,
 )
-from property_management.domain.entities import Property
+from property_management.domain.entities import (
+    Amenity,
+    Property,
+    PropertyImage,
+)
 from property_management.domain.exceptions import (
     NotPropertyOwner,
+    PropertyImageNotFound,
     PropertyNotFound,
 )
-from property_management.domain.repositories import PropertyRepository
+from property_management.domain.repositories import (
+    AmenityRepository,
+    PropertyImageRepository,
+    PropertyRepository,
+)
 
 
 class InMemoryPropertyRepository(PropertyRepository):
@@ -205,4 +219,158 @@ class GetPropertyUseCaseTests(TestCase):
         with self.assertRaises(NotPropertyOwner):
             self.use_case.execute(
                 GetPropertyQuery(property_id=self.property.id, landlord_id=2)
+            )
+
+
+class FakeAmenityRepository(AmenityRepository):
+    def list_all(self):
+        return [Amenity(id=1, name="Parking"), Amenity(id=2, name="WiFi")]
+
+
+class InMemoryPropertyImageRepository(PropertyImageRepository):
+    def __init__(self):
+        self._images: dict[int, PropertyImage] = {}
+        self._next_id = 1
+
+    def list_by_property(self, property_id: int) -> list[PropertyImage]:
+        return [
+            image
+            for image in self._images.values()
+            if image.property_id == property_id
+        ]
+
+    def get(self, image_id: int) -> PropertyImage | None:
+        return self._images.get(image_id)
+
+    def add(
+        self,
+        property_id: int,
+        file_name: str,
+        content: bytes,
+        caption: str,
+        is_cover: bool,
+    ) -> PropertyImage:
+        image = PropertyImage(
+            id=self._next_id,
+            property_id=property_id,
+            url=f"/media/{file_name}",
+            caption=caption.strip(),
+            is_cover=is_cover,
+        )
+        self._images[image.id] = image
+        self._next_id += 1
+        return image
+
+    def delete(self, image_id: int) -> None:
+        del self._images[image_id]
+
+
+class ListAmenitiesUseCaseTests(TestCase):
+    def test_returns_catalog(self):
+        amenities = ListAmenitiesUseCase(FakeAmenityRepository()).execute()
+
+        self.assertEqual([item.name for item in amenities], ["Parking", "WiFi"])
+
+
+class CreatePropertyWithAmenitiesTests(TestCase):
+    def test_passes_amenity_ids_to_the_property(self):
+        repository = InMemoryPropertyRepository()
+
+        property = create_property(repository, amenity_ids=[2, 1])
+
+        self.assertEqual(property.amenity_ids, [1, 2])
+        self.assertEqual(repository.get(property.id).amenity_ids, [1, 2])
+
+
+class UploadPropertyImageUseCaseTests(TestCase):
+    def setUp(self):
+        self.properties = InMemoryPropertyRepository()
+        self.images = InMemoryPropertyImageRepository()
+        self.property = create_property(self.properties)
+        self.use_case = UploadPropertyImageUseCase(self.properties, self.images)
+
+    def execute(self, **overrides):
+        values = {
+            "property_id": self.property.id,
+            "landlord_id": 1,
+            "file_name": "cover.png",
+            "content": b"fake-image-bytes",
+            "caption": "Living room",
+            "is_cover": True,
+        }
+        values.update(overrides)
+        return self.use_case.execute(UploadPropertyImageCommand(**values))
+
+    def test_uploads_image_to_own_property(self):
+        image = self.execute()
+
+        self.assertEqual(image.property_id, self.property.id)
+        self.assertEqual(image.url, "/media/cover.png")
+        self.assertTrue(image.is_cover)
+
+    def test_strips_caption(self):
+        image = self.execute(caption="  Living room  ")
+
+        self.assertEqual(image.caption, "Living room")
+
+    def test_missing_property_raises(self):
+        with self.assertRaises(PropertyNotFound):
+            self.execute(property_id=999)
+
+    def test_other_landlord_cannot_upload(self):
+        with self.assertRaises(NotPropertyOwner):
+            self.execute(landlord_id=2)
+
+        self.assertEqual(self.images.list_by_property(self.property.id), [])
+
+
+class DeletePropertyImageUseCaseTests(TestCase):
+    def setUp(self):
+        self.properties = InMemoryPropertyRepository()
+        self.images = InMemoryPropertyImageRepository()
+        self.property = create_property(self.properties)
+        self.image = UploadPropertyImageUseCase(
+            self.properties, self.images
+        ).execute(
+            UploadPropertyImageCommand(
+                property_id=self.property.id,
+                landlord_id=1,
+                file_name="cover.png",
+                content=b"fake-image-bytes",
+            )
+        )
+        self.use_case = DeletePropertyImageUseCase(self.properties, self.images)
+
+    def test_deletes_own_image(self):
+        self.use_case.execute(
+            DeletePropertyImageCommand(
+                property_id=self.property.id,
+                image_id=self.image.id,
+                landlord_id=1,
+            )
+        )
+
+        self.assertIsNone(self.images.get(self.image.id))
+
+    def test_other_landlord_cannot_delete(self):
+        with self.assertRaises(NotPropertyOwner):
+            self.use_case.execute(
+                DeletePropertyImageCommand(
+                    property_id=self.property.id,
+                    image_id=self.image.id,
+                    landlord_id=2,
+                )
+            )
+        self.assertIsNotNone(self.images.get(self.image.id))
+
+    def test_image_must_belong_to_the_property(self):
+        other_property = create_property(self.properties, title="Other")
+
+        with self.assertRaises(PropertyImageNotFound):
+            self.use_case.execute(
+                DeletePropertyImageCommand(
+                    property_id=other_property.id,
+                    image_id=self.image.id,
+                    landlord_id=1,
+                )
             )

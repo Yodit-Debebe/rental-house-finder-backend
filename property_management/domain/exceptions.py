@@ -12,3 +12,11 @@ class PropertyNotFound(PropertyError):
 
 class NotPropertyOwner(PropertyError):
     """The acting user is not the landlord who owns the property."""
+
+
+class InvalidAmenity(PropertyError):
+    """An amenity identifier does not exist in the catalog."""
+
+
+class PropertyImageNotFound(PropertyError):
+    """No image exists with the given identifier for the property."""

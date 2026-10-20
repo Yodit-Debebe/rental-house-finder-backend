@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from decimal import Decimal
 
 
@@ -13,3 +13,4 @@ class CreatePropertyCommand:
     bedrooms: int
     bathrooms: int
     is_available: bool = True
+    amenity_ids: list[int] = field(default_factory=list)

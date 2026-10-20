@@ -1,8 +1,8 @@
 from decimal import Decimal
 from unittest import TestCase
 
-from property_management.domain.entities import Property
-from property_management.domain.exceptions import InvalidProperty
+from property_management.domain.entities import Amenity, Property
+from property_management.domain.exceptions import InvalidAmenity, InvalidProperty
 from property_management.domain.value_objects import Address
 
 
@@ -66,3 +66,17 @@ class PropertyTests(TestCase):
 
     def test_is_available_defaults_to_true(self):
         self.assertTrue(make_property().is_available)
+
+    def test_amenity_ids_are_deduplicated_and_sorted(self):
+        property = make_property(amenity_ids=[3, 1, 3])
+
+        self.assertEqual(property.amenity_ids, [1, 3])
+
+
+class AmenityTests(TestCase):
+    def test_strips_name(self):
+        self.assertEqual(Amenity(name="  Parking  ").name, "Parking")
+
+    def test_rejects_blank_name(self):
+        with self.assertRaises(InvalidAmenity):
+            Amenity(name="   ")

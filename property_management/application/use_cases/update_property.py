@@ -46,5 +46,10 @@ class UpdatePropertyUseCase:
                 if command.is_available is not None
                 else existing.is_available
             ),
+            amenity_ids=(
+                command.amenity_ids
+                if command.amenity_ids is not None
+                else existing.amenity_ids
+            ),
         )
         return self._repository.save(updated)

@@ -18,5 +18,6 @@ class CreatePropertyUseCase:
             bedrooms=command.bedrooms,
             bathrooms=command.bathrooms,
             is_available=command.is_available,
+            amenity_ids=command.amenity_ids,
         )
         return self._repository.add(property)

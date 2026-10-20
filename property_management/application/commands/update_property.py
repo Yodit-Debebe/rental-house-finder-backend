@@ -16,3 +16,4 @@ class UpdatePropertyCommand:
     bedrooms: int | None = None
     bathrooms: int | None = None
     is_available: bool | None = None
+    amenity_ids: list[int] | None = None

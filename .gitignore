@@ -16,6 +16,9 @@ __pycache__/
 # Django local database
 db.sqlite3
 
+# User-uploaded media
+media/
+
 # Test and coverage files
 .coverage
 htmlcov/

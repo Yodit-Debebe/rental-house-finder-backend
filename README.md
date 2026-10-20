@@ -124,6 +124,14 @@ Base path: `/api/`
 | GET | `/api/properties/<id>/` | landlord token | Get an owned property | `200` property | `403` not owner · `404` missing |
 | PATCH | `/api/properties/<id>/` | landlord token | Update an owned property | `200` property | `400` · `403` · `404` |
 | DELETE | `/api/properties/<id>/` | landlord token | Delete an owned property | `204` | `403` · `404` |
+| GET | `/api/properties/amenities/` | landlord token | List the amenity catalog | `200` list | `401` · `403` |
+| POST | `/api/properties/<id>/images/` | landlord token | Upload a property image (`multipart`) | `201` image | `400` · `403` · `404` |
+| DELETE | `/api/properties/<id>/images/<image_id>/` | landlord token | Delete a property image | `204` | `403` · `404` |
+
+Property payloads include `amenities` and `images`. Create/update accept an
+optional `amenity_ids` list; the first uploaded image becomes the cover unless
+`is_cover` is sent. Uploaded files are stored under `MEDIA_ROOT` (`media/`) and
+served at `/media/` while `DEBUG=True`.
 
 Authenticated requests send the token in a header:
 
@@ -159,6 +167,13 @@ curl -X POST http://127.0.0.1:8000/api/properties/ \
 
 curl http://127.0.0.1:8000/api/properties/ \
   -H "Authorization: Token <landlord-token>"
+
+# 5. Upload a photo for a property (multipart)
+curl -X POST http://127.0.0.1:8000/api/properties/<property-id>/images/ \
+  -H "Authorization: Token <landlord-token>" \
+  -F "image=@/path/to/photo.jpg" \
+  -F "caption=Living room" \
+  -F "is_cover=true"
 ```
 
 ## Tests and checks

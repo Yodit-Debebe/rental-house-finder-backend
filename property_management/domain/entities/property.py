@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from decimal import Decimal
 
 from property_management.domain.exceptions import InvalidProperty
@@ -18,11 +18,13 @@ class Property:
     bathrooms: int
     is_available: bool = True
     id: int | None = None
+    amenity_ids: list[int] = field(default_factory=list)
 
     def __post_init__(self):
         self.title = self.title.strip()
         self.description = self.description.strip()
         self.price = Decimal(str(self.price))
+        self.amenity_ids = sorted({int(item) for item in self.amenity_ids})
 
         if not self.title:
             raise InvalidProperty("Property title must not be empty")
