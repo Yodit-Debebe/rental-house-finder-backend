@@ -21,4 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/identity/', include('identity.interfaces.http.urls')),
     path('api/properties/', include('property_management.interfaces.http.urls')),
+    path('api/administration/', include('administration.interfaces.http.urls')),
 ]

@@ -124,6 +124,13 @@ Base path: `/api/`
 | GET | `/api/properties/<id>/` | landlord token | Get an owned property | `200` property | `403` not owner · `404` missing |
 | PATCH | `/api/properties/<id>/` | landlord token | Update an owned property | `200` property | `400` · `403` · `404` |
 | DELETE | `/api/properties/<id>/` | landlord token | Delete an owned property | `204` | `403` · `404` |
+| GET | `/api/administration/users/` | admin token | List users (`role`, `is_active`, `search`) | `200` list | `400` bad filter · `401` · `403` |
+| GET | `/api/administration/users/<id>/` | admin token | User detail | `200` user | `403` · `404` |
+| PATCH | `/api/administration/users/<id>/` | admin token | Change `role` and/or `is_active` | `200` user | `400` · `403` · `404` |
+
+Administration endpoints accept users with `is_staff=True` or `role="admin"`.
+Admins cannot change their own role or status, and deactivating a user
+immediately invalidates their existing tokens.
 
 Authenticated requests send the token in a header:
 
