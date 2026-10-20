@@ -64,6 +64,10 @@ INSTALLED_APPS = [
     "ai_search",
 ]
 
+# Custom user model. Must be set before the first migration: changing it later
+# requires rebuilding the database.
+AUTH_USER_MODEL = "identity.User"
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
